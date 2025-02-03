@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CHARITEX - Volunteer Registration</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Segoe UI", "Arial", sans-serif;
+      }
+
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        padding: 20px;
+        background-image: url("https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?ixlib=rb-4.0.3");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        position: relative;
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          135deg,
+          rgba(26, 42, 108, 0.8),
+          rgba(178, 31, 31, 0.8)
+        );
+        z-index: -1;
+      }
+
+      .container {
+        background: rgba(255, 255, 255, 0.95);
+        padding: 3rem;
+        border-radius: 20px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        width: 100%;
+        max-width: 500px;
+        backdrop-filter: blur(10px);
+        transform: translateY(0);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+
+      .container:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 2.5rem;
+      }
+
+      .header h1 {
+        color: #1a2a6c;
+        margin-bottom: 0.8rem;
+        font-size: 2.2rem;
+        font-weight: 600;
+      }
+
+      .header p {
+        color: #666;
+        font-size: 1.1rem;
+      }
+
+      .form-group {
+        margin-bottom: 1.8rem;
+        position: relative;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 0.7rem;
+        color: #1a2a6c;
+        font-weight: 500;
+        font-size: 0.95rem;
+      }
+
+      input, select {
+        width: 100%;
+        padding: 1rem;
+        border: 2px solid #e1e1e1;
+        border-radius: 12px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.9);
+      }
+
+      input:focus, select:focus {
+        outline: none;
+        border-color: #1a2a6c;
+        box-shadow: 0 0 0 3px rgba(26, 42, 108, 0.1);
+      }
+
+      .checkbox-group {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        margin-top: 0.5rem;
+      }
+
+      .checkbox-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .checkbox-item input[type="checkbox"] {
+        width: auto;
+      }
+
+      button {
+        width: 100%;
+        padding: 1rem;
+        background: linear-gradient(135deg, #1a2a6c, #2a3a7c);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 1.1rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-bottom: 1.5rem;
+      }
+
+      button:hover {
+        background: linear-gradient(135deg, #2a3a7c, #3a4a8c);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(26, 42, 108, 0.2);
+      }
+
+      .login-link {
+        text-align: center;
+        color: #666;
+        font-size: 0.95rem;
+      }
+
+      .login-link a {
+        color: #1a2a6c;
+        text-decoration: none;
+      }
+
+      .error-message {
+        color: #ff4444;
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
+        display: none;
+      }
+
+      input.error {
+        border-color: #ff4444;
+        background-color: rgba(255, 68, 68, 0.05);
+      }
+
+      input.valid {
+        border-color: #00c851;
+        background-color: rgba(0, 200, 81, 0.05);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>Volunteer Registration</h1>
+        <p>Join our community of change-makers</p>
+      </div>
+
+      <form id="volunteerForm" action="volunteer-signup.php" method="POST" onsubmit="return validateForm()">
+        <div class="form-group">
+          <label for="name">Full Name</label>
+          <input
+            type="text"
+            id="name"
+            name="name"
+            required
+            onfocus="showValidation(this, 'Full name must be at least 2 words')"
+            onblur="validateFullName(this)"
+          />
+          <div class="error-message" id="name-error"></div>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            required
+            onfocus="showValidation(this, 'Enter a valid email address')"
+            onblur="validateEmail(this)"
+          />
+          <div class="error-message" id="email-error"></div>
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            required
+            onfocus="showValidation(this, 'Password must be at least 8 characters with 1 uppercase, 1 lowercase, and 1 number')"
+            onblur="validatePassword(this)"
+          />
+          <div class="error-message" id="password-error"></div>
+        </div>
+
+        <div class="form-group">
+          <label for="confirm_password">Confirm Password</label>
+          <input
+            type="password"
+            id="confirm_password"
+            name="confirm_password"
+            required
+            onfocus="showValidation(this, 'Passwords must match')"
+            onblur="validateConfirmPassword(this)"
+          />
+          <div class="error-message" id="confirm_password-error"></div>
+        </div>
+
+        <div class="form-group">
+          <label for="location">Location</label>
+          <input
+            type="text"
+            id="location"
+            name="location"
+            required
+            placeholder="Enter your city or region"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="availability">Availability</label>
+          <select id="availability" name="availability" required>
+            <option value="">Select your availability</option>
+            <option value="weekdays">Weekdays</option>
+            <option value="weekends">Weekends</option>
+            <option value="flexible">Flexible</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Areas of Interest</label>
+          <div class="checkbox-group">
+            <div class="checkbox-item">
+              <input type="checkbox" id="education" name="interests[]" value="education">
+              <label for="education">Education</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="healthcare" name="interests[]" value="healthcare">
+              <label for="healthcare">Healthcare</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="environment" name="interests[]" value="environment">
+              <label for="environment">Environment</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="elderly" name="interests[]" value="elderly">
+              <label for="elderly">Elderly Care</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="skills">Skills & Experience</label>
+          <input
+            type="text"
+            id="skills"
+            name="skills"
+            placeholder="e.g., Teaching, First Aid, Project Management"
+          />
+        </div>
+
+        <button type="submit">Register as Volunteer</button>
+
+        <div class="login-link">
+          Already registered? <a href="login.html">Log in</a>
+        </div>
+      </form>
+    </div>
+
+    <script>
+      function showValidation(input, message) {
+        const errorElement = document.getElementById(`${input.id}-error`);
+        errorElement.textContent = message;
+        errorElement.style.display = "block";
+      }
+
+      function hideValidation(input) {
+        const errorElement = document.getElementById(`${input.id}-error`);
+        errorElement.style.display = "none";
+      }
+
+      function validateFullName(input) {
+        const value = input.value.trim();
+        const words = value.split(" ").filter((word) => word.length > 0);
+
+        if (words.length < 2) {
+          input.classList.add("error");
+          input.classList.remove("valid");
+          showValidation(input, "Please enter your full name (first & last name)");
+          return false;
+        }
+
+        input.classList.remove("error");
+        input.classList.add("valid");
+        hideValidation(input);
+        return true;
+      }
+
+      function validateEmail(input) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const value = input.value.trim();
+
+        if (!emailRegex.test(value)) {
+          input.classList.add("error");
+          input.classList.remove("valid");
+          showValidation(input, "Please enter a valid email address");
+          return false;
+        }
+
+        input.classList.remove("error");
+        input.classList.add("valid");
+        hideValidation(input);
+        return true;
+      }
+
+      function validatePassword(input) {
+        const value = input.value;
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
+
+        if (!passwordRegex.test(value)) {
+          input.classList.add("error");
+          input.classList.remove("valid");
+          showValidation(
+            input,
+            "Password must be at least 8 characters with 1 uppercase, 1 lowercase, and 1 number"
+          );
+          return false;
+        }
+
+        input.classList.remove("error");
+        input.classList.add("valid");
+        hideValidation(input);
+        return true;
+      }
+
+      function validateConfirmPassword(input) {
+        const password = document.getElementById("password").value;
+        const confirmPassword = input.value;
+
+        if (password !== confirmPassword) {
+          input.classList.add("error");
+          input.classList.remove("valid");
+          showValidation(input, "Passwords do not match");
+          return false;
+        }
+
+        input.classList.remove("error");
+        input.classList.add("valid");
+        hideValidation(input);
+        return true;
+      }
+
+      function validateForm() {
+        const nameValid = validateFullName(document.getElementById("name"));
+        const emailValid = validateEmail(document.getElementById("email"));
+        const passwordValid = validatePassword(document.getElementById("password"));
+        const confirmPasswordValid = validateConfirmPassword(document.getElementById("confirm_password"));
+        
+        return nameValid && emailValid && passwordValid && confirmPasswordValid;
+      }
+
+      document.querySelectorAll("input").forEach((input) => {
+        input.addEventListener("input", function () {
+          if (this.classList.contains("error")) {
+            this.classList.remove("error");
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
