@@ -23,9 +23,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['user_type'] = $userType;
             $_SESSION['email'] = $user['email'];
+            $_SESSION['name'] = $user['name'];
             
             // Redirect to appropriate dashboard
-            header("Location: main.php");
+            header("Location: donor.php");
             exit();
         } else {
             // Login failed
