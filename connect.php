@@ -14,8 +14,7 @@ try {
 }
 
 // Database Table Creation (if not already exists)
-$createDonorTable = "
-CREATE TABLE IF NOT EXISTS donors (
+$createDonorTable = "CREATE TABLE IF NOT EXISTS donors (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
@@ -23,8 +22,7 @@ CREATE TABLE IF NOT EXISTS donors (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )";
 
-$createVolunteerTable = "
-CREATE TABLE IF NOT EXISTS volunteers (
+$createVolunteerTable = "CREATE TABLE IF NOT EXISTS volunteers (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
@@ -37,11 +35,17 @@ CREATE TABLE IF NOT EXISTS volunteers (
     skills TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )";
+$password="CREATE TABLE password_resets (
+    email VARCHAR(255) PRIMARY KEY,
+    otp VARCHAR(6) NOT NULL,
+    expiry DATETIME NOT NULL,
+    used TINYINT(1) DEFAULT 0
+)";
 
 $pdo->exec($createDonorTable);
 $pdo->exec($createVolunteerTable);
 
-// Process Signup Form
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Sanitize and validate inputs
     $name = filter_input(INPUT_POST, 'name', FILTER_SANITIZE_STRING);
@@ -50,6 +54,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     // Hash password securely
     $hashedPassword = password_hash($_POST['password'], PASSWORD_BCRYPT);
+
+    // Check if email exists in either donor or volunteer table
+    $check_donor = $pdo->prepare("SELECT email FROM donors WHERE email = ?");
+    $check_donor->execute([$email]);
+    $donor_result = $check_donor->rowCount();
+
+    $check_volunteer = $pdo->prepare("SELECT email FROM volunteers WHERE email = ?");
+    $check_volunteer->execute([$email]);
+    $volunteer_result = $check_volunteer->rowCount();
+
+    if ($donor_result > 0 || $volunteer_result > 0) {
+        // Email exists, redirect back with error
+        header("Location: signup.php?error=email_exists");
+        exit();
+    }
 
     try {
         if ($role === 'donor') {

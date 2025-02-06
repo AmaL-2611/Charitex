@@ -207,6 +207,15 @@
       </div>
 
       <form id="signupForm" action="connect.php" method="POST" onsubmit="return validateForm()">
+        <?php
+          if(isset($_GET['error'])) {
+            if($_GET['error'] == 'email_exists') {
+              echo '<div class="error-message" style="display: block; color: #ff4444; text-align: center; margin-bottom: 15px;">
+                Email already exists.
+              </div>';
+            }
+          }
+        ?>
         <div class="role-selector">
           <div class="role-option active" onclick="selectRole('donor')">
             <h3>Donor</h3>

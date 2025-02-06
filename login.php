@@ -1,3 +1,9 @@
+<?php
+session_start();
+if (isset($_GET['error'])) {
+    $error = $_GET['error'];
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -217,6 +223,32 @@
         border-color: #1a2a6c;
         box-shadow: 0 0 0 3px rgba(26, 42, 108, 0.1);
       }
+
+      .modal {
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+      }
+
+      .modal-content {
+        background-color: white;
+        margin: 15% auto;
+        padding: 20px;
+        border-radius: 12px;
+        width: 80%;
+        max-width: 400px;
+      }
+
+      .close {
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+      }
     </style>
   </head>
   <body>
@@ -278,12 +310,44 @@
         <button type="submit">Log In</button>
 
         <div class="links">
-          <a href="forgot-password.php">Forgot Password?</a>
+          <a href="reading mail.php" onclick="showForgotPasswordModal(); return false;">Forgot Password?</a>
           <span class="divider">|</span>
           <a href="signup.php">Create Account</a>
         </div>
       </form>
     </div>
+
+    <!-- Add Forgot Password Modal
+    <div id="forgotPasswordModal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Forgot Password</h2>
+        <div id="step1">
+          <p>Enter your email address to receive an OTP</p>
+          <div class="form-group">
+            <input type="email" id="forgotEmail" placeholder="Enter your email" required>
+          </div>
+          <button onclick="sendOTP()">Send OTP</button>
+        </div>
+        <div id="step2" style="display: none;">
+          <p>Enter the OTP sent to your email</p>
+          <div class="form-group">
+            <input type="text" id="otpInput" placeholder="Enter OTP" required>
+          </div>
+          <button onclick="verifyOTP()">Verify OTP</button>
+        </div>
+        <div id="step3" style="display: none;">
+          <p>Enter your new password</p>
+          <div class="form-group">
+            <input type="password" id="newPassword" placeholder="New Password" required>
+          </div>
+          <div class="form-group">
+            <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
+          </div>
+          <button onclick="resetPassword()">Reset Password</button>
+        </div>
+      </div>
+    </div> -->
 
     <script>
       function showValidation(input, message) {
@@ -327,12 +391,8 @@
           input.classList.remove("valid");
           showValidation(input, "Password is required");
           return false;
-        } else if (value.length < 8) {
-          input.classList.add("error");
-          input.classList.remove("valid");
-          showValidation(input, "Password must be at least 8 characters");
-          return false;
-        }
+        } 
+        
 
         input.classList.remove("error");
         input.classList.add("valid");
@@ -361,6 +421,83 @@
           document.getElementById("errorMessage").style.display = "none";
         });
       });
+
+      function showForgotPasswordModal() {
+        document.getElementById('forgotPasswordModal').style.display = 'block';
+      }
+
+      document.querySelector('.close').onclick = function() {
+        document.getElementById('forgotPasswordModal').style.display = 'none';
+      }
+
+      function sendOTP() {
+        const email = document.getElementById('forgotEmail').value;
+        fetch('send_otp.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: `email=${encodeURIComponent(email)}`
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            document.getElementById('step1').style.display = 'none';
+            document.getElementById('step2').style.display = 'block';
+          } else {
+            alert(data.message);
+          }
+        });
+      }
+
+      function verifyOTP() {
+        const email = document.getElementById('forgotEmail').value;
+        const otp = document.getElementById('otpInput').value;
+        fetch('verify_otp.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: `email=${encodeURIComponent(email)}&otp=${encodeURIComponent(otp)}`
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            document.getElementById('step2').style.display = 'none';
+            document.getElementById('step3').style.display = 'block';
+          } else {
+            alert(data.message);
+          }
+        });
+      }
+
+      function resetPassword() {
+        const email = document.getElementById('forgotEmail').value;
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+
+        if (newPassword !== confirmPassword) {
+          alert('Passwords do not match!');
+          return;
+        }
+
+        fetch('reset_password.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: `email=${encodeURIComponent(email)}&password=${encodeURIComponent(newPassword)}`
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            alert('Password reset successfully!');
+            document.getElementById('forgotPasswordModal').style.display = 'none';
+          } else {
+            alert(data.message);
+          }
+        });
+      }
     </script>
   </body>
 </html>
